@@ -1,0 +1,144 @@
+.dashboard {
+  padding-top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.dashboard__greeting {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.dashboard__title {
+  font-size: var(--text-2xl);
+  color: var(--color-primary-dark);
+}
+
+.balance-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  background: var(--color-primary);
+  border: none;
+}
+
+.balance-card__label {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.balance-card__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-3xl);
+  color: #fff;
+}
+
+.balance-card__value--negative {
+  color: #FDEBE7;
+}
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.indicator-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4);
+}
+
+.indicator-card__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.indicator-card__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+
+.indicator-card__value--entrada,
+.indicator-card__value--receber {
+  color: var(--color-success);
+}
+
+.indicator-card__value--saida,
+.indicator-card__value--pagar {
+  color: var(--color-danger);
+}
+
+.dashboard__section-title {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recent-item:last-child {
+  border-bottom: none;
+}
+
+.recent-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recent-item__description {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-item__meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.recent-item__amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.recent-item__amount--entrada {
+  color: var(--color-success);
+}
+
+.recent-item__amount--saida {
+  color: var(--color-danger);
+}
+
+.dashboard__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.dashboard__actions .btn {
+  flex: 1;
+}

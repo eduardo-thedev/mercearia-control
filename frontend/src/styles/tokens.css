@@ -1,0 +1,62 @@
+/*
+  Design tokens - Mercearia Lima
+  Paleta extraida direto do logo (Mercearia Lima): fundo ambar,
+  lettering vermelho, assinatura grafite, raios off-white creme.
+
+  - Vermelho (primary): acao principal, links, nav ativa - mesma cor do
+    lettering "MERCEARIA" do logo
+  - Ambar (accent): destaque, FAB, badges - a cor de fundo do logo
+  - Grafite (text): tom do "Lima" escrito a mao no logo
+  - Creme (bg): tom dos raios do logo, leve, nao branco clinico
+*/
+
+:root {
+  /* Cor */
+  --color-bg: #FAF6EE;
+  --color-surface: #FFFFFF;
+  --color-primary: #E1382B;
+  --color-primary-dark: #B42C22;
+  --color-accent: #F4A733;
+  --color-accent-dark: #C3852A;
+  --color-text: #303234;
+  --color-text-muted: #7A756C;
+  --color-border: #E8E1D3;
+  --color-success: #3F7D42;
+  --color-danger: #9C2E1F;
+  --color-danger-bg: #FBEAE5;
+
+  /* Tipografia */
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  /* Espacamento (base 4px, pensado pra toque mobile) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Toque - alvo minimo recomendado 44-48px */
+  --tap-target: 48px;
+
+  /* Raio e sombra */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(48, 50, 52, 0.06);
+  --shadow-md: 0 4px 16px rgba(48, 50, 52, 0.08);
+
+  /* Layout mobile-first */
+  --bottom-nav-height: 64px;
+  --content-max-width: 480px;
+}

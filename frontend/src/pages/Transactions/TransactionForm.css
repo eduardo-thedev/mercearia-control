@@ -1,0 +1,70 @@
+.tx-form-page {
+  padding-top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tx-form-page__back {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.tx-form-page__title {
+  font-size: var(--text-2xl);
+  color: var(--color-primary-dark);
+}
+
+.tx-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tx-form__type-toggle {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.tx-form__type-btn {
+  flex: 1;
+  min-height: var(--tap-target);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tx-form__type-btn--active-entrada {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: #fff;
+}
+
+.tx-form__type-btn--active-saida {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.tx-form__error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.tx-form__locked-note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
