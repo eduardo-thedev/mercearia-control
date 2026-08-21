@@ -1,9 +1,11 @@
-# Mercearia Lima - Controle Financeiro (Fase 1 + 2 + 3)
+# Mercearia Lima - Controle Financeiro (Fase 1 + 2 + 3 + 4)
 
-Fase 1 (Fundacao): setup, banco, backend, API, autenticacao.
+Fase 1 (Fundacao): setup, banco, backend, API, autenticacao (login por usuário ou e-mail).
 Fase 2 (Financeiro): CRUD de entradas/saidas, calculo de saldo, historico com filtros.
 Fase 3 (Pendencias): CRUD de pendencias a receber/a pagar, baixa gerando
 lancamento automatico, status "vencido" calculado dinamicamente.
+Fase 4 (Dashboard): saldo atual, resumo do mes, total a receber/a pagar em
+aberto, ultimos lancamentos.
 
 Modelo: **single-user** (cada usuario e dono isolado dos proprios dados). Auth via
 JWT guardado em cookie httpOnly (nao em localStorage).
@@ -18,28 +20,29 @@ JWT guardado em cookie httpOnly (nao em localStorage).
 ## Reaproveitado do FinDash
 
 Padrao de auth (JWT + bcryptjs), estrutura de pastas em camadas
-(controllers/services/repositories), Postgres via Docker local, config por
-variaveis de ambiente.
+(controllers/services/repositories), config por variaveis de ambiente.
 
 ## Como rodar
 
 ### 1. Banco de dados
 
-Via Docker:
-```bash
-cd backend
-docker compose up -d
-```
-Ou Postgres local/pgAdmin/DbGate - ver conversa do projeto pra esse caminho.
+Postgres local, gerenciado via pgAdmin ou DbGate (sem Docker no ambiente de
+desenvolvimento atual). Precisa existir um banco `mercearia_db` com um
+usuario que tenha acesso a ele - ver `.env.example` pro formato esperado da
+`DATABASE_URL`.
+
+> Existe um `docker-compose.yml` em `backend/` como alternativa, se um dia
+> fizer sentido rodar via Docker (ex: outra maquina, CI), mas nao e o fluxo
+> usado hoje.
 
 ### 2. Backend
 
 ```bash
 cd backend
-cp .env.example .env
+cp .env.example .env   # ajuste DATABASE_URL pro seu Postgres local
 npm install
-npm run migrate   # cria/atualiza as tabelas
-npm run dev        # http://localhost:3333
+npm run migrate         # cria/atualiza as tabelas (idempotente - roda schema.sql inteiro)
+npm run dev              # http://localhost:3333
 ```
 
 ### 3. Frontend
@@ -48,12 +51,12 @@ npm run dev        # http://localhost:3333
 cd frontend
 cp .env.example .env
 npm install
-npm run dev         # http://localhost:5173
+npm run dev               # http://localhost:5173
 ```
 
 ## Rotas da API
 
-### Auth (Fase 1, com login por usuário)
+### Auth (Fase 1, login por usuário ou e-mail)
 
 ```
 POST /api/auth/register   { name, username, email, password }
@@ -70,7 +73,7 @@ formato do `identifier` (se tem "@", busca por email; senao, por username).
 ### Transactions - entradas e saidas (Fase 2)
 
 ```
-GET    /api/transactions            filtros: type, category, payment_method, from, to
+GET    /api/transactions            filtros: type, category, payment_method, from, to, limit
 GET    /api/transactions/summary    filtros: from, to -> { totalEntradas, totalSaidas, saldo }
 GET    /api/transactions/:id
 POST   /api/transactions
@@ -82,11 +85,13 @@ Todas autenticadas e escopadas ao usuario logado. `category` e validada contra
 a lista certa pro `type` (entrada vs saida) - ver `src/constants/transactionOptions.ts`.
 Lancamentos com `pending_transaction_id` preenchido (gerados por baixa de
 pendencia) nao podem ser editados/excluidos direto - isso vem da Fase 3.
+`limit` (Fase 4) existe pra alimentar o "ultimos lancamentos" do Dashboard.
 
 ### Pending - pendencias a receber/a pagar (Fase 3)
 
 ```
 GET    /api/pending              filtros: type, status, from, to (due_date)
+GET    /api/pending/summary      -> { totalReceber, totalPagar } (so o que esta em aberto)
 GET    /api/pending/:id
 POST   /api/pending               { type, person, description, amount, due_date, notes? }
 PUT    /api/pending/:id           so funciona enquanto status = pendente
@@ -131,9 +136,10 @@ backend/src/
 frontend/src/
   styles/        tokens.css (paleta Mercearia Lima) + global.css
   constants/     espelho das categorias/formas de pagamento do backend
-  utils/         formatCurrency, formatDateDisplay, todayIso
+  utils/         formatCurrency, formatDateDisplay, todayIso, firstDayOfMonthIso
   components/    Button, Input, Card, Layout, ConfirmDialog, ActionSheet, SettleDialog
-  pages/         Login, Dashboard, Transactions (lista + form), Pending (lista + form)
+  pages/         Login, Dashboard (indicadores reais), Transactions (lista + form),
+                  Pending (lista + form)
   contexts/      AuthContext
   services/      api.ts (fetch client)
   routes/        ProtectedRoute
@@ -145,13 +151,15 @@ frontend/src/
   corrigido com `types.setTypeParser` em `config/database.ts`.
 - Erros de negocio fora de auth (ex: lancamento nao encontrado) caiam em 500
   generico porque o `errorHandler` so reconhecia `AuthError` - agora existe
-  `AppError` como base, e `AuthError`/`TransactionError` estendem ela.
+  `AppError` como base, e `AuthError`/`TransactionError`/`PendingError`
+  estendem ela.
 
 ## Decisoes em aberto (para decidir no caminho)
 
 - Sem diferenciacao de papel (dono/funcionario) - o modelo e single-user por
   enquanto, como decidido na Fase 1.
-- Fase 4 (Dashboard) vai consumir `/api/transactions/summary` e um novo
-  agregado de pendencias (total a receber / a pagar) pra montar os
-  indicadores reais - hoje o Dashboard so tem um link pra Lançamentos.
-
+- Fase 5 (Relatorios) e a proxima: relatorio mensal, filtros, graficos
+  basicos - vai reaproveitar `/transactions/summary` com `from`/`to` por
+  periodo, ja pronto desde a Fase 2.
+- Fase 6 (Refinamento) fica pra quando o escopo for fechado explicitamente -
+  "polish" nao tem linha de chegada obvia.
