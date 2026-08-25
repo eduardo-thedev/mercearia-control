@@ -42,9 +42,12 @@ export function Layout({ children }: PropsWithChildren) {
         >
           Pendências
         </NavLink>
-        <button className="bottom-nav__item" type="button" disabled title="Fase 5">
+        <NavLink
+          to="/reports"
+          className={({ isActive }) => `bottom-nav__item${isActive ? " bottom-nav__item--active" : ""}`}
+        >
           Relatórios
-        </button>
+        </NavLink>
       </nav>
 
       <ActionSheet open={actionSheetOpen} onClose={() => setActionSheetOpen(false)} />

@@ -8,6 +8,10 @@ import {
   PendingInput,
   PendingFilters,
   PendingSummary,
+  MonthlyReport,
+  CategoryBreakdownItem,
+  EvolutionPoint,
+  TransactionType,
 } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
@@ -114,6 +118,16 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ payment_method: paymentMethod }),
       }),
+  },
+
+  reports: {
+    monthly: (month: string) => request<MonthlyReport>(`/reports/monthly${toQueryString({ month })}`),
+
+    categories: (month: string, type: TransactionType) =>
+      request<{ categories: CategoryBreakdownItem[] }>(`/reports/categories${toQueryString({ month, type })}`),
+
+    evolution: (months = 6) =>
+      request<{ evolution: EvolutionPoint[] }>(`/reports/evolution${toQueryString({ months })}`),
   },
 };
 

@@ -88,3 +88,24 @@ export interface PendingSummary {
   totalReceber: number;
   totalPagar: number;
 }
+
+export interface MonthlyReport {
+  month: string;
+  totalEntradas: number;
+  totalSaidas: number;
+  resultado: number;
+  totalReceber: number;
+  totalPagar: number;
+}
+
+export interface CategoryBreakdownItem {
+  category: string;
+  total: number;
+}
+
+export interface EvolutionPoint {
+  month: string;
+  entradas: number;
+  saidas: number;
+  saldo: number;
+}

@@ -8,6 +8,7 @@ import { Transactions } from "./pages/Transactions/Transactions";
 import { TransactionForm } from "./pages/Transactions/TransactionForm";
 import { Pending } from "./pages/Pending/Pending";
 import { PendingForm } from "./pages/Pending/PendingForm";
+import { Reports } from "./pages/Reports/Reports";
 
 export default function App() {
   return (
@@ -70,6 +71,14 @@ export default function App() {
               element={
                 <Layout>
                   <PendingForm />
+                </Layout>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <Layout>
+                  <Reports />
                 </Layout>
               }
             />

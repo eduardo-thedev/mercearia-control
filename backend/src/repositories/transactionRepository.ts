@@ -131,4 +131,32 @@ export const transactionRepository = {
       saldo: totals.entrada - totals.saida,
     };
   },
+
+  // Gastos/receitas por categoria num periodo - Fase 5, "gastos por
+  // categoria" (secao 9 do context.md).
+  async categoryBreakdown(userId: string, filters: { type: TransactionType; from: string; to: string }) {
+    const result = await query<{ category: string; total: string }>(
+      `SELECT category, COALESCE(SUM(amount), 0) as total
+       FROM transactions
+       WHERE user_id = $1 AND type = $2 AND date >= $3 AND date <= $4
+       GROUP BY category
+       ORDER BY total DESC`,
+      [userId, filters.type, filters.from, filters.to]
+    );
+    return result.rows.map((r) => ({ category: r.category, total: Number(r.total) }));
+  },
+
+  // Entradas/saidas agrupadas por mes - base pra "evolucao do saldo"
+  // (secao 9 do context.md).
+  async monthlyBreakdown(userId: string, filters: { from: string; to: string }) {
+    const result = await query<{ month: string; type: TransactionType; total: string }>(
+      `SELECT to_char(date, 'YYYY-MM') as month, type, COALESCE(SUM(amount), 0) as total
+       FROM transactions
+       WHERE user_id = $1 AND date >= $2 AND date <= $3
+       GROUP BY month, type
+       ORDER BY month ASC`,
+      [userId, filters.from, filters.to]
+    );
+    return result.rows.map((r) => ({ month: r.month, type: r.type, total: Number(r.total) }));
+  },
 };
