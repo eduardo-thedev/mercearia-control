@@ -28,4 +28,5 @@ app.use(errorHandler);
 app.listen(env.port, () => {
   // eslint-disable-next-line no-console
   console.log(`API rodando em http://localhost:${env.port}`);
+  console.log(`[debug] FRONTEND_URL carregado: "${env.frontendUrl}"`);
 });
