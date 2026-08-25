@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Input } from "../../components/Input/Input";
 import { Button } from "../../components/Button/Button";
@@ -10,6 +10,8 @@ import "./Login.css";
 export function Login() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetSuccess = Boolean((location.state as { resetSuccess?: boolean } | null)?.resetSuccess);
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -54,6 +56,11 @@ export function Login() {
 
       <Card>
         <form className="login__form" onSubmit={handleSubmit}>
+          {resetSuccess && mode === "login" && (
+            <div className="login__error" style={{ background: "#E3F0E1", color: "var(--color-success)" }}>
+              Senha redefinida com sucesso. Entre com sua senha nova.
+            </div>
+          )}
           {error && <div className="login__error">{error}</div>}
 
           {mode === "register" && (
@@ -114,6 +121,12 @@ export function Login() {
           <Button type="submit" variant="primary" loading={submitting}>
             {mode === "login" ? "Entrar" : "Criar conta"}
           </Button>
+
+          {mode === "login" && (
+            <p className="login__toggle" style={{ marginTop: "calc(var(--space-2) * -1)" }}>
+              <Link to="/forgot-password">Esqueci minha senha</Link>
+            </p>
+          )}
         </form>
       </Card>
 

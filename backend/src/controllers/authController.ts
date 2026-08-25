@@ -25,6 +25,15 @@ const loginSchema = z.object({
   password: z.string().min(1, "Informe a senha."),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("E-mail invalido."),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token invalido."),
+  password: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
+});
+
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 function setAuthCookie(res: Response, token: string) {
@@ -60,5 +69,18 @@ export const authController = {
     const userId = req.user!.sub;
     const user = await authService.getProfile(userId);
     return res.status(200).json({ user });
+  }),
+
+  forgotPassword: asyncHandler(async (req: Request, res: Response) => {
+    const { email } = forgotPasswordSchema.parse(req.body);
+    await authService.forgotPassword(email);
+    // Mensagem generica sempre, exista ou nao a conta - nao vaza quem tem cadastro
+    return res.json({ message: "Se esse e-mail existir na nossa base, você vai receber um link de redefinição." });
+  }),
+
+  resetPassword: asyncHandler(async (req: Request, res: Response) => {
+    const { token, password } = resetPasswordSchema.parse(req.body);
+    await authService.resetPassword(token, password);
+    return res.json({ message: "Senha redefinida com sucesso." });
   }),
 };

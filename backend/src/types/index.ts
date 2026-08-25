@@ -4,11 +4,13 @@ export interface User {
   username: string | null;
   email: string;
   password_hash: string;
+  reset_token_hash: string | null;
+  reset_token_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type PublicUser = Omit<User, "password_hash">;
+export type PublicUser = Omit<User, "password_hash" | "reset_token_hash" | "reset_token_expires_at">;
 
 export type TransactionType = "entrada" | "saida";
 

@@ -26,4 +26,30 @@ export const userRepository = {
     );
     return result.rows[0];
   },
+
+  async setResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await query("UPDATE users SET reset_token_hash = $1, reset_token_expires_at = $2 WHERE id = $3", [
+      tokenHash,
+      expiresAt,
+      userId,
+    ]);
+  },
+
+  // So retorna se o token bate E ainda nao expirou - filtro direto na query
+  async findByValidResetTokenHash(tokenHash: string): Promise<User | null> {
+    const result = await query<User>(
+      "SELECT * FROM users WHERE reset_token_hash = $1 AND reset_token_expires_at > now()",
+      [tokenHash]
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async updatePasswordAndClearResetToken(userId: string, passwordHash: string): Promise<void> {
+    await query(
+      `UPDATE users
+       SET password_hash = $1, reset_token_hash = NULL, reset_token_expires_at = NULL, updated_at = now()
+       WHERE id = $2`,
+      [passwordHash, userId]
+    );
+  },
 };

@@ -2,12 +2,15 @@ import { userRepository } from "../repositories/userRepository";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signToken } from "../utils/jwt";
 import { AppError } from "../utils/AppError";
+import { generateResetToken, hashResetToken } from "../utils/resetToken";
+import { sendPasswordResetEmail } from "./emailService";
+import { env } from "../config/env";
 import { PublicUser, User } from "../types";
 
 export class AuthError extends AppError {}
 
 function toPublicUser(user: User): PublicUser {
-  const { password_hash, ...publicUser } = user;
+  const { password_hash, reset_token_hash, reset_token_expires_at, ...publicUser } = user;
   return publicUser;
 }
 
@@ -66,5 +69,29 @@ export const authService = {
       throw new AuthError("Usuario nao encontrado.", 404);
     }
     return toPublicUser(user);
+  },
+
+  // Sempre "sucesso" do ponto de vista do chamador, exista ou nao o e-mail -
+  // evita que alguem descubra quais e-mails tem conta so tentando resetar.
+  async forgotPassword(email: string) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) return;
+
+    const { token, hash, expiresAt } = generateResetToken();
+    await userRepository.setResetToken(user.id, hash, expiresAt);
+
+    const resetUrl = `${env.frontendUrl}/reset-password?token=${token}`;
+    await sendPasswordResetEmail(user.email, resetUrl);
+  },
+
+  async resetPassword(token: string, newPassword: string) {
+    const tokenHash = hashResetToken(token);
+    const user = await userRepository.findByValidResetTokenHash(tokenHash);
+    if (!user) {
+      throw new AuthError("Link invalido ou expirado. Peca um novo.", 400);
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await userRepository.updatePasswordAndClearResetToken(user.id, passwordHash);
   },
 };

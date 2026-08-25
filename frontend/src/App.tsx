@@ -9,6 +9,8 @@ import { TransactionForm } from "./pages/Transactions/TransactionForm";
 import { Pending } from "./pages/Pending/Pending";
 import { PendingForm } from "./pages/Pending/PendingForm";
 import { Reports } from "./pages/Reports/Reports";
+import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword/ResetPassword";
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route element={<ProtectedRoute />}>
             <Route

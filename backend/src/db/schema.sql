@@ -25,6 +25,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username
   ON users(username)
   WHERE username IS NOT NULL;
 
+-- Recuperacao de senha: guarda so o HASH do token (nunca o token cru),
+-- mesmo principio de nunca guardar senha em texto puro. Token expira e
+-- e de uso unico (limpo apos reset bem-sucedido).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_hash TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS pending_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
