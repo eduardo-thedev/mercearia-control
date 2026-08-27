@@ -31,12 +31,25 @@ export const authService = {
     }
 
     const passwordHash = await hashPassword(input.password);
-    const user = await userRepository.create({
-      name: input.name,
-      username: input.username,
-      email: input.email,
-      passwordHash,
-    });
+
+    let user: User;
+    try {
+      user = await userRepository.create({
+        name: input.name,
+        username: input.username,
+        email: input.email,
+        passwordHash,
+      });
+    } catch (err) {
+      // Segunda camada de protecao: se duas requisicoes quase simultaneas
+      // passarem pela checagem acima ao mesmo tempo (race condition), o
+      // Postgres rejeita a segunda pela constraint UNIQUE - convertemos o
+      // erro cru (23505) numa resposta amigavel em vez de deixar virar 500.
+      if (err && typeof err === "object" && "code" in err && err.code === "23505") {
+        throw new AuthError("Ja existe uma conta com esse e-mail ou nome de usuario.", 409);
+      }
+      throw err;
+    }
 
     const token = signToken({ sub: user.id, email: user.email });
     return { user: toPublicUser(user), token };

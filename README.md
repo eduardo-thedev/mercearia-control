@@ -118,7 +118,7 @@ POST   /api/pending/:id/baixa     { payment_method } -> marca pago/recebido e cr
 Decisoes de projeto nessa fase:
 
 - **"vencido" nao e persistido.** E calculado na query (`due_date < hoje AND
-  status = 'pendente'`), sem precisar de cron job atualizando status em
+status = 'pendente'`), sem precisar de cron job atualizando status em
   segundo plano. Filtrar por `status=vencido` funciona normalmente.
 - **Baixa e atomica.** Cria a transaction e atualiza o status da pendencia
   numa unica transacao de banco (BEGIN/COMMIT) com `SELECT ... FOR UPDATE`,
