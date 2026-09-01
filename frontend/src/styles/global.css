@@ -1,6 +1,9 @@
 @import "./tokens.css";
+@import "./ledger.css";
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -12,20 +15,24 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--text-base);
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   margin: 0;
-  letter-spacing: -0.01em;
 }
 
 p {
@@ -33,22 +40,65 @@ p {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
 
 a {
   color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* Toda quantia em dinheiro anda na monoespacada tabular: as virgulas
+   alinham entre linhas, que e a razao da fita de caixa existir.
+   Em :where() para ficar com especificidade zero - e uma base, e cada
+   tela ainda manda no proprio tamanho e tracking. */
+:where(
+  .balance-card__value,
+  .indicator-card__value,
+  .recent-item__amount,
+  .tx-card__amount,
+  .pending-card__amount,
+  .monthly-report__value,
+  .bar-item__value
+) {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Unico movimento do app: a folha que sobe do rodape. */
+@keyframes overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-rise {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--ink);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent-dark);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

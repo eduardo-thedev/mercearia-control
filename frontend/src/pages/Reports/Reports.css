@@ -2,14 +2,16 @@
   padding-top: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
 }
 
 .reports__title {
   font-size: var(--text-2xl);
-  color: var(--color-primary-dark);
+  font-weight: 800;
+  color: var(--ink);
 }
 
+/* --- Seletor de mes ------------------------------------------------ */
 .month-picker {
   display: flex;
   align-items: center;
@@ -17,14 +19,21 @@
 }
 
 .month-picker__btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border: 1px solid var(--rule-strong);
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--paper-raised);
+  color: var(--ink);
   font-size: var(--text-lg);
+  line-height: 1;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.month-picker__btn:hover {
+  background: var(--paper-sunken);
 }
 
 .month-picker__label {
@@ -33,146 +42,178 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--text-lg);
-  color: var(--color-text);
+  letter-spacing: -0.02em;
   text-transform: capitalize;
+  color: var(--ink);
 }
 
+/* --- Fechamento do mes ---------------------------------------------
+   Linhas de caderneta (rotulo, pontilhado, valor). O Resultado e o
+   total: fica entre dois fios duplos, como o fecho de uma conta. */
 .monthly-report {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
 }
 
 .monthly-report__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
 }
 
 .monthly-report__row:last-child {
   border-bottom: none;
+  padding-bottom: 0;
+}
+
+.monthly-report__row:first-child {
+  padding-top: 0;
 }
 
 .monthly-report__label {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: var(--ink-soft);
 }
 
 .monthly-report__value {
-  font-family: var(--font-display);
-  font-weight: 700;
   font-size: var(--text-base);
-}
-
-.monthly-report__value--entrada,
-.monthly-report__value--receber {
-  color: var(--color-success);
-}
-
-.monthly-report__value--saida,
-.monthly-report__value--pagar {
-  color: var(--color-danger);
-}
-
-.monthly-report__row--result .monthly-report__label,
-.monthly-report__row--result .monthly-report__value {
-  font-size: var(--text-lg);
-}
-
-.reports__section-title {
-  font-size: var(--text-base);
-  color: var(--color-text);
   font-weight: 600;
+  color: var(--ink);
+}
+
+.monthly-report__value--entrada {
+  color: var(--green);
+}
+
+/* Pendencia (receber/pagar) fica em vermelho: ainda nao e dinheiro
+   confirmado em caixa, so um lembrete do que esta em aberto. */
+.monthly-report__value--saida,
+.monthly-report__value--pagar,
+.monthly-report__value--receber {
+  color: var(--red);
+}
+
+.monthly-report__row--result {
+  padding: var(--space-4) 0;
+  border-top: 3px double var(--rule-strong);
+  border-bottom: 3px double var(--rule-strong);
+}
+
+.monthly-report__row--result .monthly-report__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+  color: var(--ink);
+}
+
+.monthly-report__row--result .monthly-report__value {
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+}
+
+/* --- Secoes --------------------------------------------------------- */
+.reports__section-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+  color: var(--ink-soft);
+  margin-bottom: var(--space-2);
 }
 
 .category-toggle {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-4);
+  background: var(--paper-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
 }
 
 .category-toggle__btn {
   flex: 1;
-  min-height: 36px;
+  min-height: 38px;
+  border: none;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  background: transparent;
+  color: var(--ink-soft);
   font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .category-toggle__btn--active-entrada {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: #fff;
+  background: var(--green);
+  color: var(--paper-raised);
 }
 
 .category-toggle__btn--active-saida {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-  color: #fff;
+  background: var(--red);
+  color: var(--paper-raised);
 }
 
+/* --- Barras por categoria -------------------------------------------
+   Barra reta e baixa: e uma medida, nao um enfeite. */
 .bar-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .bar-item__top {
-  display: flex;
-  justify-content: space-between;
   font-size: var(--text-sm);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .bar-item__category {
-  color: var(--color-text);
   font-weight: 600;
+  color: var(--ink);
 }
 
 .bar-item__value {
-  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
 }
 
 .bar-item__track {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--color-bg);
+  height: 8px;
+  border-radius: 2px;
+  background: var(--paper-sunken);
   overflow: hidden;
 }
 
 .bar-item__fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: 2px;
 }
 
 .bar-item__fill--entrada {
-  background: var(--color-success);
+  background: var(--green);
 }
 
 .bar-item__fill--saida {
-  background: var(--color-danger);
+  background: var(--red);
 }
 
+/* --- Evolucao -------------------------------------------------------- */
 .evolution-chart {
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
 .evolution-chart text {
+  font-family: var(--font-mono);
   font-size: 9px;
-  fill: var(--color-text-muted);
-  font-family: var(--font-body);
+  fill: var(--ink-soft);
 }
 
 .reports-empty {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  padding: var(--space-5) 0;
   text-align: center;
-  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
 }

@@ -9,7 +9,7 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data invalida. Use o
 
 const basePendingSchema = z.object({
   type: z.enum(["receber", "pagar"], { errorMap: () => ({ message: "Tipo deve ser receber ou pagar." }) }),
-  person: z.string().trim().min(1, "Informe o cliente/fornecedor.").max(160),
+  person_id: z.string().uuid("Selecione um cliente/fornecedor."),
   description: z.string().trim().min(1, "Descricao e obrigatoria.").max(255),
   amount: z.coerce.number().positive("O valor deve ser maior que zero."),
   due_date: dateSchema,
@@ -22,6 +22,7 @@ const updatePendingSchema = basePendingSchema.partial();
 const filtersSchema = z.object({
   type: z.enum(["receber", "pagar"]).optional(),
   status: z.enum(["pendente", "pago", "recebido", "vencido"]).optional(),
+  person_id: z.string().uuid().optional(),
   from: dateSchema.optional(),
   to: dateSchema.optional(),
 });

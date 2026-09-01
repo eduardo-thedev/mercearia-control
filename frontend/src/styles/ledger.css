@@ -1,0 +1,41 @@
+/*
+  Linha de caderneta
+  ------------------------------------------------------------------
+  O dispositivo estrutural do app: rotulo a esquerda, valor a direita,
+  ligados por uma linha pontilhada. E como um livro-caixa alinha
+  quantias, e serve pro olho percorrer a coluna de valores sem se
+  perder. Vale em toda linha de "uma coisa -> um valor".
+
+  Feito com ::after ordenado entre os dois filhos, entao nao exige
+  marcacao extra em lugar nenhum.
+*/
+
+:where(.indicator-card, .monthly-report__row, .bar-item__top) {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.indicator-card::after,
+.monthly-report__row::after,
+.bar-item__top::after {
+  content: "";
+  order: 2;
+  flex: 1 1 auto;
+  min-width: var(--space-4);
+  align-self: center;
+  margin: 0 var(--space-2);
+  border-bottom: 1px dotted var(--rule-strong);
+}
+
+:where(.indicator-card__label, .monthly-report__label, .bar-item__category) {
+  order: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+:where(.indicator-card__value, .monthly-report__value, .bar-item__value) {
+  order: 3;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

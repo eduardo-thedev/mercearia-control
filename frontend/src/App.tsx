@@ -8,6 +8,9 @@ import { Transactions } from "./pages/Transactions/Transactions";
 import { TransactionForm } from "./pages/Transactions/TransactionForm";
 import { Pending } from "./pages/Pending/Pending";
 import { PendingForm } from "./pages/Pending/PendingForm";
+import { People } from "./pages/People/People";
+import { PersonForm } from "./pages/People/PersonForm";
+import { PersonDetail } from "./pages/People/PersonDetail";
 import { Reports } from "./pages/Reports/Reports";
 import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword/ResetPassword";
@@ -83,6 +86,38 @@ export default function App() {
               element={
                 <Layout>
                   <Reports />
+                </Layout>
+              }
+            />
+            <Route
+              path="/people"
+              element={
+                <Layout>
+                  <People />
+                </Layout>
+              }
+            />
+            <Route
+              path="/people/new"
+              element={
+                <Layout>
+                  <PersonForm />
+                </Layout>
+              }
+            />
+            <Route
+              path="/people/:id"
+              element={
+                <Layout>
+                  <PersonDetail />
+                </Layout>
+              }
+            />
+            <Route
+              path="/people/:id/edit"
+              element={
+                <Layout>
+                  <PersonForm />
                 </Layout>
               }
             />

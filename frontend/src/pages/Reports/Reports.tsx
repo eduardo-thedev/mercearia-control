@@ -14,7 +14,7 @@ function shiftMonth(month: string, offset: number): string {
 export function Reports() {
   const [month, setMonth] = useState(currentMonthIso());
   const [report, setReport] = useState<MonthlyReport | null>(null);
-  const [categoryType, setCategoryType] = useState<TransactionType>("saida");
+  const [categoryType, setCategoryType] = useState<TransactionType>("entrada");
   const [categories, setCategories] = useState<CategoryBreakdownItem[]>([]);
   const [evolution, setEvolution] = useState<EvolutionPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +33,11 @@ export function Reports() {
         setReport(reportRes);
         setCategories(categoriesRes.categories);
         setEvolution(evolutionRes.evolution);
+        // Sem saida no mes, nao faz sentido oferecer o toggle pra ver
+        // categoria de saida - volta pro unico tipo que existe de fato.
+        if (!reportRes.totalSaidas && categoryType === "saida") {
+          setCategoryType("entrada");
+        }
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Não foi possível carregar os relatórios.");
       } finally {
@@ -69,6 +74,13 @@ export function Reports() {
         <p className="reports-empty">Carregando...</p>
       ) : (
         <>
+          {/*
+            "Saidas" e "Resultado" so aparecem se houve saida de fato no
+            mes (o unico jeito disso acontecer e uma pendencia a pagar
+            baixada). Sem saida, Resultado seria so uma copia de
+            Entradas - redundante - entao o mes fica so com a linha de
+            venda. Mesma logica pra "a pagar" mais abaixo.
+          */}
           <Card className="monthly-report">
             <div className="monthly-report__row">
               <span className="monthly-report__label">Entradas</span>
@@ -76,47 +88,57 @@ export function Reports() {
                 {formatCurrency(report?.totalEntradas ?? 0)}
               </span>
             </div>
-            <div className="monthly-report__row">
-              <span className="monthly-report__label">Saídas</span>
-              <span className="monthly-report__value monthly-report__value--saida">
-                {formatCurrency(report?.totalSaidas ?? 0)}
-              </span>
-            </div>
-            <div className="monthly-report__row monthly-report__row--result">
-              <span className="monthly-report__label">Resultado</span>
-              <span className="monthly-report__value">{formatCurrency(report?.resultado ?? 0)}</span>
-            </div>
+            {Boolean(report?.totalSaidas) && (
+              <>
+                <div className="monthly-report__row">
+                  <span className="monthly-report__label">Saídas</span>
+                  <span className="monthly-report__value monthly-report__value--saida">
+                    {formatCurrency(report?.totalSaidas ?? 0)}
+                  </span>
+                </div>
+                <div className="monthly-report__row monthly-report__row--result">
+                  <span className="monthly-report__label">Resultado</span>
+                  <span className="monthly-report__value">{formatCurrency(report?.resultado ?? 0)}</span>
+                </div>
+              </>
+            )}
             <div className="monthly-report__row">
               <span className="monthly-report__label">A receber (em aberto)</span>
               <span className="monthly-report__value monthly-report__value--receber">
                 {formatCurrency(report?.totalReceber ?? 0)}
               </span>
             </div>
-            <div className="monthly-report__row">
-              <span className="monthly-report__label">A pagar (em aberto)</span>
-              <span className="monthly-report__value monthly-report__value--pagar">
-                {formatCurrency(report?.totalPagar ?? 0)}
-              </span>
-            </div>
+            {Boolean(report?.totalPagar) && (
+              <div className="monthly-report__row">
+                <span className="monthly-report__label">A pagar (em aberto)</span>
+                <span className="monthly-report__value monthly-report__value--pagar">
+                  {formatCurrency(report?.totalPagar ?? 0)}
+                </span>
+              </div>
+            )}
           </Card>
 
           <div>
             <p className="reports__section-title">Por categoria</p>
             <Card>
-              <div className="category-toggle">
-                <button
-                  className={`category-toggle__btn ${categoryType === "entrada" ? "category-toggle__btn--active-entrada" : ""}`}
-                  onClick={() => setCategoryType("entrada")}
-                >
-                  Entradas
-                </button>
-                <button
-                  className={`category-toggle__btn ${categoryType === "saida" ? "category-toggle__btn--active-saida" : ""}`}
-                  onClick={() => setCategoryType("saida")}
-                >
-                  Saídas
-                </button>
-              </div>
+              {/* So vale mostrar o alternador se houve saida no mes -
+                  sem isso, teria um botao pra uma vista sempre vazia. */}
+              {Boolean(report?.totalSaidas) && (
+                <div className="category-toggle">
+                  <button
+                    className={`category-toggle__btn ${categoryType === "entrada" ? "category-toggle__btn--active-entrada" : ""}`}
+                    onClick={() => setCategoryType("entrada")}
+                  >
+                    Entradas
+                  </button>
+                  <button
+                    className={`category-toggle__btn ${categoryType === "saida" ? "category-toggle__btn--active-saida" : ""}`}
+                    onClick={() => setCategoryType("saida")}
+                  >
+                    Saídas
+                  </button>
+                </div>
+              )}
 
               {categories.length === 0 ? (
                 <p className="reports-empty">Sem lançamentos nesse mês.</p>

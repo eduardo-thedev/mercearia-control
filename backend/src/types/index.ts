@@ -46,7 +46,9 @@ export interface PendingTransaction {
   id: string;
   user_id: string;
   type: PendingType;
-  person: string;
+  person_id: string;
+  person_name: string; // vem do JOIN com people
+  person_phone: string | null; // vem do JOIN com people
   description: string;
   amount: string; // NUMERIC vem como string do pg
   due_date: string;
@@ -60,8 +62,31 @@ export interface PendingTransaction {
 export interface PendingFilters {
   type?: PendingType;
   status?: PendingEffectiveStatus;
+  person_id?: string;
   from?: string;
   to?: string;
+}
+
+export interface Person {
+  id: string;
+  user_id: string;
+  name: string;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonInput {
+  name: string;
+  phone?: string | null;
+}
+
+// Totais em aberto agregados de pending_transactions - so presentes
+// quando a pessoa vem da listagem (peopleRepository.list), nao de um
+// find/create/update isolado.
+export interface PersonWithTotals extends Person {
+  total_receber_aberto: string;
+  total_pagar_aberto: string;
 }
 
 export interface JwtPayload {

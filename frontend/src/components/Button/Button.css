@@ -1,3 +1,6 @@
+/* Botao-tecla: os cheios tem a aresta de 2px embaixo e afundam ao
+   apertar, como tecla de registradora. O fantasma nao tem aresta
+   porque nao e o que se aperta. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -6,45 +9,54 @@
   width: 100%;
   min-height: var(--tap-target);
   padding: 0 var(--space-5);
-  border-radius: var(--radius-md);
   border: none;
-  font-family: var(--font-display);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: var(--text-base);
+  letter-spacing: 0.005em;
   cursor: pointer;
-  transition: transform 0.08s ease, opacity 0.15s ease, background-color 0.15s ease;
-}
-
-.btn:active {
-  transform: scale(0.98);
+  transition: background-color 0.15s ease, box-shadow 0.1s ease, transform 0.1s ease;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .btn--primary {
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--ink);
+  color: var(--paper-raised);
+  box-shadow: var(--shadow-key) rgba(0, 0, 0, 0.35);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  background: var(--ink-hover);
 }
 
 .btn--accent {
-  background: var(--color-accent);
-  color: var(--color-primary-dark);
+  background: var(--amber);
+  color: var(--ink);
+  box-shadow: var(--shadow-key) var(--amber-deep);
 }
 
 .btn--accent:hover:not(:disabled) {
-  background: var(--color-accent-dark);
-  color: #fff;
+  background: #E59A2C;
+}
+
+.btn--primary:active:not(:disabled),
+.btn--accent:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
 }
 
 .btn--ghost {
   background: transparent;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule-strong);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--paper-sunken);
+  color: var(--ink);
 }

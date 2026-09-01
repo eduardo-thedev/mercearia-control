@@ -1,4 +1,5 @@
 import { pendingRepository } from "../repositories/pendingRepository";
+import { peopleService } from "./peopleService";
 import { AppError } from "../utils/AppError";
 import { PendingFilters, PendingType } from "../types";
 
@@ -6,7 +7,7 @@ export class PendingError extends AppError {}
 
 interface PendingInput {
   type: PendingType;
-  person: string;
+  person_id: string;
   description: string;
   amount: number;
   due_date: string;
@@ -37,6 +38,7 @@ export const pendingService = {
   },
 
   async create(userId: string, input: PendingInput) {
+    await peopleService.assertBelongsToUser(userId, input.person_id);
     return pendingRepository.create(userId, input);
   },
 
@@ -47,6 +49,9 @@ export const pendingService = {
     }
     if (existing.status !== "pendente") {
       throw new PendingError("Pendencias ja baixadas (pagas/recebidas) nao podem ser editadas.", 409);
+    }
+    if (input.person_id) {
+      await peopleService.assertBelongsToUser(userId, input.person_id);
     }
     return pendingRepository.update(userId, id, input);
   },

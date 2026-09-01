@@ -1,7 +1,7 @@
+/* Ficha de papel: reta, com fio de contorno em vez de sombra. */
 .card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-paper);
   padding: var(--space-5);
 }

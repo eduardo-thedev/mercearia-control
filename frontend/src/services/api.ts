@@ -12,6 +12,9 @@ import {
   CategoryBreakdownItem,
   EvolutionPoint,
   TransactionType,
+  Person,
+  PersonInput,
+  PersonWithTotals,
 } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "/api";
@@ -130,6 +133,26 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ payment_method: paymentMethod }),
       }),
+  },
+
+  people: {
+    list: (q?: string) => request<{ people: PersonWithTotals[] }>(`/people${toQueryString({ q })}`),
+
+    get: (id: string) => request<{ person: Person }>(`/people/${id}`),
+
+    create: (input: PersonInput) =>
+      request<{ person: Person }>("/people", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+
+    update: (id: string, input: Partial<PersonInput>) =>
+      request<{ person: Person }>(`/people/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(input),
+      }),
+
+    remove: (id: string) => request<void>(`/people/${id}`, { method: "DELETE" }),
   },
 
   reports: {

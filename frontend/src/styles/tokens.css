@@ -1,62 +1,115 @@
 /*
   Design tokens - Mercearia Lima
-  Paleta extraida direto do logo (Mercearia Lima): fundo ambar,
-  lettering vermelho, assinatura grafite, raios off-white creme.
+  ------------------------------------------------------------------
+  Direcao: "Caderneta". O app e a pagina de um livro-caixa de mercearia,
+  nao um painel de SaaS. O papel e o chao (nao ha cartoes brancos
+  flutuando), o dinheiro e impresso em monoespacada tabular como fita de
+  caixa, os rotulos de secao sao caixa-alta espacada de comanda, e o que
+  ja foi resolvido leva carimbo.
 
-  - Vermelho (primary): acao principal, links, nav ativa - mesma cor do
-    lettering "MERCEARIA" do logo
-  - Ambar (accent): destaque, FAB, badges - a cor de fundo do logo
-  - Grafite (text): tom do "Lima" escrito a mao no logo
-  - Creme (bg): tom dos raios do logo, leve, nao branco clinico
+  Cor: continua saindo do logo (fundo ambar, lettering vermelho, grafite
+  do "Lima", creme dos raios), mas com papeis semanticos disciplinados:
+
+    - Grafite (ink)  -> acao principal, nav ativa, texto. E a caneta.
+    - Ambar          -> a marca e o botao de novo lancamento. E a placa.
+    - Vermelho       -> exclusivamente saida de dinheiro e acao destrutiva.
+    - Verde          -> exclusivamente entrada de dinheiro.
+
+  O vermelho da marca (--brand-red) fica reservado ao wordmark, para nao
+  competir com o vermelho de "saiu dinheiro".
 */
 
 :root {
-  /* Cor */
-  --color-bg: #FAF6EE;
-  --color-surface: #FFFFFF;
-  --color-primary: #E1382B;
-  --color-primary-dark: #B42C22;
-  --color-accent: #F4A733;
-  --color-accent-dark: #C3852A;
-  --color-text: #303234;
-  --color-text-muted: #7A756C;
-  --color-border: #E8E1D3;
-  --color-success: #3F7D42;
-  --color-danger: #9C2E1F;
-  --color-danger-bg: #FBEAE5;
+  /* --- Papel e tinta --------------------------------------------- */
+  --paper: #F6EFE1;
+  --paper-raised: #FFFCF4;
+  --paper-sunken: #EFE6D3;
 
-  /* Tipografia */
-  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
-  --font-body: "Inter", "Segoe UI", sans-serif;
+  --ink: #26241F;
+  --ink-hover: #3B382F;
+  --ink-soft: #6E6759;
+  --ink-faint: #9A9384;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
+  --rule: #DCD1B9;
+  --rule-strong: #C3B698;
+
+  /* --- Marca ------------------------------------------------------ */
+  --amber: #F2A63A;
+  --amber-deep: #B8791A;
+  --amber-ink: #8F5C0F;   /* ambar legivel como texto sobre papel */
+  --amber-wash: #FBEEDA;
+  --brand-red: #D8382A;   /* lettering do logo - so display */
+
+  /* --- Direcao do dinheiro ---------------------------------------- */
+  --green: #2E6B3A;
+  --green-deep: #1F4D28;
+  --green-wash: #E2EDDF;
+  --red: #C22E20;
+  --red-deep: #8E1F16;
+  --red-wash: #F7E3DD;
+
+  /* --- Tipografia --------------------------------------------------
+     display: Bricolage Grotesque - grotesca de letreiro, usada so em
+              titulos e no wordmark.
+     body:    Instrument Sans - quente, x-height alto, boa com acentos.
+     mono:    IBM Plex Mono - todo valor em dinheiro e todo rotulo de
+              secao. E a fita da registradora.                        */
+  --font-display: "Bricolage Grotesque", "Segoe UI", sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;      /* 16px: abaixo disso o iOS da zoom no input */
   --text-lg: 1.125rem;
   --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
-  --text-3xl: 2.25rem;
+  --text-2xl: 1.6875rem;
+  --text-3xl: 2.375rem;
 
-  /* Espacamento (base 4px, pensado pra toque mobile) */
+  --track-label: 0.16em;  /* espacamento dos rotulos de comanda */
+
+  /* --- Espacamento (base 4px, pensado pra toque) ------------------- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --space-7: 44px;
 
-  /* Toque - alvo minimo recomendado 44-48px */
   --tap-target: 48px;
 
-  /* Raio e sombra */
+  /* --- Forma -------------------------------------------------------
+     O papel e reto (raio quase zero); o que se aperta e macio.       */
+  --radius-paper: 4px;
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 1px 2px rgba(48, 50, 52, 0.06);
-  --shadow-md: 0 4px 16px rgba(48, 50, 52, 0.08);
+  --radius-md: 10px;
+  --radius-sheet: 20px;
 
-  /* Layout mobile-first */
-  --bottom-nav-height: 64px;
+  --shadow-key: 0 2px 0;                          /* borda de tecla */
+  --shadow-lift: 0 8px 28px rgba(38, 36, 31, 0.16);
+  --shadow-sheet: 0 -12px 40px rgba(38, 36, 31, 0.22);
+
+  /* --- Layout mobile-first ----------------------------------------- */
+  --bottom-nav-height: 68px;
   --content-max-width: 480px;
+
+  /* --- Aliases legados ---------------------------------------------
+     Alguns componentes referenciam estes nomes em style inline.
+     Mantidos como ponte para a paleta nova.                          */
+  --color-bg: var(--paper);
+  --color-surface: var(--paper-raised);
+  --color-primary: var(--ink);
+  --color-primary-dark: var(--ink);
+  --color-accent: var(--amber);
+  --color-accent-dark: var(--amber-deep);
+  --color-text: var(--ink);
+  --color-text-muted: var(--ink-soft);
+  --color-border: var(--rule);
+  --color-success: var(--green);
+  --color-danger: var(--red);
+  --color-danger-bg: var(--red-wash);
+  --radius-lg: var(--radius-paper);
+  --shadow-sm: none;
+  --shadow-md: var(--shadow-lift);
 }

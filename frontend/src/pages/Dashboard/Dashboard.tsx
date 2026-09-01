@@ -65,30 +65,36 @@ export function Dashboard() {
       ) : (
         <>
           <Card className="balance-card">
-            <span className="balance-card__label">Saldo atual</span>
+            <span className="balance-card__label">Subtotal</span>
             <span className={`balance-card__value ${(balance?.saldo ?? 0) < 0 ? "balance-card__value--negative" : ""}`}>
               {formatCurrency(balance?.saldo ?? 0)}
             </span>
           </Card>
 
+          {/*
+            So "vendas do mes" - sem essa e uma tela de contabilidade,
+            que nao registra saida nenhuma pelo app. O saldo la em cima
+            ja e a verdade sobre o caixa; aqui e so o pulso do mes.
+          */}
           <div>
             <p className="dashboard__section-title">Este mês</p>
             <div className="indicator-grid">
               <Card className="indicator-card">
-                <span className="indicator-card__label">Entradas</span>
+                <span className="indicator-card__label">Vendas</span>
                 <span className="indicator-card__value indicator-card__value--entrada">
                   {formatCurrency(monthSummary?.totalEntradas ?? 0)}
-                </span>
-              </Card>
-              <Card className="indicator-card">
-                <span className="indicator-card__label">Saídas</span>
-                <span className="indicator-card__value indicator-card__value--saida">
-                  {formatCurrency(monthSummary?.totalSaidas ?? 0)}
                 </span>
               </Card>
             </div>
           </div>
 
+          {/*
+            "A Receber" (fiado de cliente) e o uso real dessa tela, fica
+            sempre visivel. "A Pagar" so aparece quando existe alguma
+            pendencia a pagar de fato - esse dono nao tem fornecedor
+            fiado, entao a linha some sozinha em vez de ficar cravada em
+            R$ 0,00 pra sempre. No dia em que ele lancar uma, ela volta.
+          */}
           <div>
             <p className="dashboard__section-title">Pendências em aberto</p>
             <div className="indicator-grid">
@@ -98,12 +104,14 @@ export function Dashboard() {
                   {formatCurrency(pendingSummary?.totalReceber ?? 0)}
                 </span>
               </Card>
-              <Card className="indicator-card">
-                <span className="indicator-card__label">A Pagar</span>
-                <span className="indicator-card__value indicator-card__value--pagar">
-                  {formatCurrency(pendingSummary?.totalPagar ?? 0)}
-                </span>
-              </Card>
+              {(pendingSummary?.totalPagar ?? 0) > 0 && (
+                <Card className="indicator-card">
+                  <span className="indicator-card__label">A Pagar</span>
+                  <span className="indicator-card__value indicator-card__value--pagar">
+                    {formatCurrency(pendingSummary?.totalPagar ?? 0)}
+                  </span>
+                </Card>
+              )}
             </div>
           </div>
 

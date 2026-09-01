@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog/ConfirmDialog";
@@ -83,7 +83,12 @@ export function Pending() {
 
   return (
     <div className="pending">
-      <h1 className="pending__title">Pendências</h1>
+      <div className="pending__header">
+        <h1 className="pending__title">Pendências</h1>
+        <Link to="/people" className="pending__people-link">
+          Clientes
+        </Link>
+      </div>
 
       <div className="tabs">
         <button
@@ -96,7 +101,7 @@ export function Pending() {
           A Receber
         </button>
         <button
-          className={`tabs__item ${type === "pagar" ? "tabs__item--active-saida" : ""}`}
+          className={`tabs__item ${type === "pagar" ? "tabs__item--active-secondary" : ""}`}
           onClick={() => {
             setType("pagar");
             setStatus("");
@@ -135,7 +140,7 @@ export function Pending() {
           items.map((item) => (
             <Card key={item.id} className="pending-card">
               <div className="pending-card__main">
-                <span className="pending-card__person">{item.person}</span>
+                <span className="pending-card__person">{item.person_name}</span>
                 <span className="pending-card__description">{item.description}</span>
                 <span className="pending-card__due">Vencimento: {formatDateDisplay(item.due_date)}</span>
               </div>

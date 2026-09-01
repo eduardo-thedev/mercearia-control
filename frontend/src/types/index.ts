@@ -57,7 +57,9 @@ export interface PendingTransaction {
   id: string;
   user_id: string;
   type: PendingType;
-  person: string;
+  person_id: string;
+  person_name: string;
+  person_phone: string | null;
   description: string;
   amount: number;
   due_date: string;
@@ -70,7 +72,7 @@ export interface PendingTransaction {
 
 export interface PendingInput {
   type: PendingType;
-  person: string;
+  person_id: string;
   description: string;
   amount: number;
   due_date: string;
@@ -80,6 +82,7 @@ export interface PendingInput {
 export interface PendingFilters {
   type?: PendingType;
   status?: PendingEffectiveStatus;
+  person_id?: string;
   from?: string;
   to?: string;
 }
@@ -87,6 +90,27 @@ export interface PendingFilters {
 export interface PendingSummary {
   totalReceber: number;
   totalPagar: number;
+}
+
+export interface Person {
+  id: string;
+  user_id: string;
+  name: string;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonInput {
+  name: string;
+  phone?: string | null;
+}
+
+// So vem preenchido quando a pessoa vem da listagem (GET /people) - um
+// find/create/update isolado nao traz o total agregado.
+export interface PersonWithTotals extends Person {
+  total_receber_aberto: number;
+  total_pagar_aberto: number;
 }
 
 export interface MonthlyReport {
