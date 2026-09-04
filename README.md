@@ -1,4 +1,4 @@
-# Mercearia Lima - Controle Financeiro (Fase 1 + 2 + 3 + 4)
+# Mercearia Lima - Controle Financeiro (Fase 1 + 2 + 3 + 4 + 5)
 
 Fase 1 (Fundacao): setup, banco, backend, API, autenticacao (login por usuário ou e-mail).
 Fase 2 (Financeiro): CRUD de entradas/saidas, calculo de saldo, historico com filtros.
@@ -6,6 +6,11 @@ Fase 3 (Pendencias): CRUD de pendencias a receber/a pagar, baixa gerando
 lancamento automatico, status "vencido" calculado dinamicamente.
 Fase 4 (Dashboard): saldo atual, resumo do mes, total a receber/a pagar em
 aberto, ultimos lancamentos.
+Fase 5 (Relatorios): relatorio mensal, gastos/receitas por categoria,
+evolucao do saldo em grafico SVG (sem dependencia externa).
+
+Pos-roadmap (rumo a producao): error boundary no frontend e recuperacao de
+senha por e-mail - ver secoes proprias mais abaixo.
 
 Modelo: **single-user** (cada usuario e dono isolado dos proprios dados). Auth via
 JWT guardado em cookie httpOnly (nao em localStorage).
@@ -70,6 +75,17 @@ unico. Contas criadas antes dessa mudanca ficam com `username = null` e
 continuam logando pelo email normalmente - o backend decide qual buscar pelo
 formato do `identifier` (se tem "@", busca por email; senao, por username).
 
+```
+POST /api/auth/forgot-password   { email } -> sempre 200 com mensagem generica,
+                                    exista ou nao a conta (evita enumeracao de e-mail)
+POST /api/auth/reset-password    { token, password } -> token de uso unico, expira em 1h
+```
+
+Variaveis novas no `.env` do backend: `RESEND_API_KEY` e `EMAIL_FROM`. Sem
+`RESEND_API_KEY` configurada, o link de reset cai no **console do backend**
+em vez de ser enviado por e-mail de verdade - da pra testar o fluxo inteiro
+sem precisar configurar o Resend ainda.
+
 ### Transactions - entradas e saidas (Fase 2)
 
 ```
@@ -102,7 +118,7 @@ POST   /api/pending/:id/baixa     { payment_method } -> marca pago/recebido e cr
 Decisoes de projeto nessa fase:
 
 - **"vencido" nao e persistido.** E calculado na query (`due_date < hoje AND
-  status = 'pendente'`), sem precisar de cron job atualizando status em
+status = 'pendente'`), sem precisar de cron job atualizando status em
   segundo plano. Filtrar por `status=vencido` funciona normalmente.
 - **Baixa e atomica.** Cria a transaction e atualiza o status da pendencia
   numa unica transacao de banco (BEGIN/COMMIT) com `SELECT ... FOR UPDATE`,
@@ -118,6 +134,35 @@ Decisoes de projeto nessa fase:
 - Pendencias ja baixadas (pago/recebido) nao podem ser editadas nem
   excluidas, pra nao dessincronizar do lancamento que ja foi gerado.
 
+### Reports - relatorios (Fase 5)
+
+```
+GET /api/reports/monthly?month=AAAA-MM              -> { month, totalEntradas, totalSaidas, resultado, totalReceber, totalPagar }
+GET /api/reports/categories?month=AAAA-MM&type=..    -> { categories: [{ category, total }] }
+GET /api/reports/evolution?months=6                  -> { evolution: [{ month, entradas, saidas, saldo }] }
+```
+
+Decisoes de projeto nessa fase:
+
+- **Relatorio mensal reaproveita os summaries existentes** - `totalEntradas`/
+  `totalSaidas`/`resultado` vem de `transactionRepository.summary` com o mes
+  como periodo; `totalReceber`/`totalPagar` vem do `pendingRepository.summary`
+  (sempre o total em aberto agora, nao "do mes" - pendencia nao tem essa
+  nocao, e o exemplo original do context.md tambem mostra assim).
+- **Evolucao do saldo e cumulativa de verdade**, nao reinicia do zero na
+  janela de 6 meses: calcula o saldo ate o dia anterior a janela como "saldo
+  inicial" e vai somando o resultado de cada mes a partir dali.
+- **Graficos em SVG puro**, sem biblioteca externa (recharts, chart.js etc) -
+  mantem o front sem dependencia nova so pra isso.
+
+## Rede de seguranca (ErrorBoundary)
+
+`main.tsx` envolve `<App />` num `ErrorBoundary` (`components/ErrorBoundary`).
+Qualquer erro de render nao previsto em qualquer tela mostra uma mensagem
+amigavel com botao "Recarregar" em vez de tela branca sem explicacao - feito
+pensando em quem vai usar o sistema no dia a dia sem conhecimento tecnico.
+Em dev (`import.meta.env.DEV`), mostra tambem o stack trace pra debug.
+
 ## Estrutura
 
 ```
@@ -129,13 +174,19 @@ backend/src/
   utils/         AppError, hash de senha, JWT, asyncHandler
   middlewares/   auth, tratamento de erro (reconhece qualquer AppError)
   repositories/  acesso a dados (user, transaction, pending)
-  services/      regra de negocio (auth, transaction, pending)
+  services/      regra de negocio (auth, transaction, pending, report, email)
   controllers/   HTTP <-> service, validacao zod
   routes/        registro de rotas
 
 frontend/src/
   styles/        tokens.css (paleta Mercearia Lima) + global.css
   constants/     espelho das categorias/formas de pagamento do backend
+  utils/         formatCurrency, formatDateDisplay, todayIso, firstDayOfMonthIso,
+                  currentMonthIso, formatMonthLabel, formatMonthShort
+  components/    Button, Input, Card, Layout, ConfirmDialog, ActionSheet, SettleDialog,
+                  ErrorBoundary
+  pages/         Login, ForgotPassword, ResetPassword, Dashboard, Transactions
+                  (lista + form), Pending (lista + form), Reports
   utils/         formatCurrency, formatDateDisplay, todayIso, firstDayOfMonthIso
   components/    Button, Input, Card, Layout, ConfirmDialog, ActionSheet, SettleDialog
   pages/         Login, Dashboard (indicadores reais), Transactions (lista + form),
@@ -153,11 +204,22 @@ frontend/src/
   generico porque o `errorHandler` so reconhecia `AuthError` - agora existe
   `AppError` como base, e `AuthError`/`TransactionError`/`PendingError`
   estendem ela.
+- `toPublicUser` so excluia `password_hash` da resposta - depois de adicionar
+  `reset_token_hash`/`reset_token_expires_at` na tabela `users`, esses campos
+  vazavam no JSON de `/auth/login` e `/auth/me`. Corrigido excluindo os dois
+  tambem, e o tipo `PublicUser` agora reflete isso (`Omit` com os 3 campos).
 
 ## Decisoes em aberto (para decidir no caminho)
 
 - Sem diferenciacao de papel (dono/funcionario) - o modelo e single-user por
   enquanto, como decidido na Fase 1.
+- Roadmap original (6 fases) completo em funcionalidade, mais error boundary
+  e recuperacao de senha resolvidos como pre-producao. Falta a Fase 6
+  formal (responsividade fina, testes automatizados) e infraestrutura de
+  deploy (a definir - aguardando limitacoes que o Eduardo vai trazer).
+- `RESEND_API_KEY` ainda nao configurada em lugar nenhum - o fluxo de reset
+  de senha funciona ponta a ponta, mas o e-mail de verdade so sai quando essa
+  chave for configurada (fallback pro console enquanto isso).
 - Fase 5 (Relatorios) e a proxima: relatorio mensal, filtros, graficos
   basicos - vai reaproveitar `/transactions/summary` com `from`/`to` por
   periodo, ja pronto desde a Fase 2.

@@ -3,7 +3,7 @@ import { PendingTransaction, PendingFilters, PendingType } from "../types";
 
 interface CreatePendingInput {
   type: PendingType;
-  person: string;
+  person_id: string;
   description: string;
   amount: number;
   due_date: string;
@@ -18,26 +18,34 @@ type UpdatePendingInput = Partial<CreatePendingInput>;
 // ainda pendente"). Isso vira uma coluna computada na query.
 const EFFECTIVE_STATUS_EXPR = `
   CASE
-    WHEN status = 'pendente' AND due_date < CURRENT_DATE THEN 'vencido'
-    ELSE status
+    WHEN pt.status = 'pendente' AND pt.due_date < CURRENT_DATE THEN 'vencido'
+    ELSE pt.status
   END
 `;
 
+// person_name/person_phone vem do JOIN com people - pending_transactions
+// so guarda o id (secao "pessoas" - ver schema.sql).
+const SELECT_COLUMNS = `pt.*, p.name as person_name, p.phone as person_phone, (${EFFECTIVE_STATUS_EXPR}) as effective_status`;
+
 function buildWhere(userId: string, filters: PendingFilters) {
-  const clauses: string[] = ["user_id = $1"];
+  const clauses: string[] = ["pt.user_id = $1"];
   const params: unknown[] = [userId];
 
   if (filters.type) {
     params.push(filters.type);
-    clauses.push(`type = $${params.length}`);
+    clauses.push(`pt.type = $${params.length}`);
+  }
+  if (filters.person_id) {
+    params.push(filters.person_id);
+    clauses.push(`pt.person_id = $${params.length}`);
   }
   if (filters.from) {
     params.push(filters.from);
-    clauses.push(`due_date >= $${params.length}`);
+    clauses.push(`pt.due_date >= $${params.length}`);
   }
   if (filters.to) {
     params.push(filters.to);
-    clauses.push(`due_date <= $${params.length}`);
+    clauses.push(`pt.due_date <= $${params.length}`);
   }
   if (filters.status) {
     params.push(filters.status);
@@ -51,10 +59,11 @@ export const pendingRepository = {
   async list(userId: string, filters: PendingFilters): Promise<PendingTransaction[]> {
     const { where, params } = buildWhere(userId, filters);
     const result = await query<PendingTransaction>(
-      `SELECT *, (${EFFECTIVE_STATUS_EXPR}) as effective_status
-       FROM pending_transactions
+      `SELECT ${SELECT_COLUMNS}
+       FROM pending_transactions pt
+       JOIN people p ON p.id = pt.person_id
        WHERE ${where}
-       ORDER BY due_date ASC, created_at DESC`,
+       ORDER BY pt.due_date ASC, pt.created_at DESC`,
       params
     );
     return result.rows;
@@ -62,21 +71,23 @@ export const pendingRepository = {
 
   async findById(userId: string, id: string): Promise<PendingTransaction | null> {
     const result = await query<PendingTransaction>(
-      `SELECT *, (${EFFECTIVE_STATUS_EXPR}) as effective_status
-       FROM pending_transactions WHERE id = $1 AND user_id = $2`,
+      `SELECT ${SELECT_COLUMNS}
+       FROM pending_transactions pt
+       JOIN people p ON p.id = pt.person_id
+       WHERE pt.id = $1 AND pt.user_id = $2`,
       [id, userId]
     );
     return result.rows[0] ?? null;
   },
 
   async create(userId: string, data: CreatePendingInput): Promise<PendingTransaction> {
-    const result = await query<PendingTransaction>(
-      `INSERT INTO pending_transactions (user_id, type, person, description, amount, due_date, notes)
+    const inserted = await query<{ id: string }>(
+      `INSERT INTO pending_transactions (user_id, type, person_id, description, amount, due_date, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *, (${EFFECTIVE_STATUS_EXPR}) as effective_status`,
-      [userId, data.type, data.person, data.description, data.amount, data.due_date, data.notes ?? null]
+       RETURNING id`,
+      [userId, data.type, data.person_id, data.description, data.amount, data.due_date, data.notes ?? null]
     );
-    return result.rows[0];
+    return (await this.findById(userId, inserted.rows[0].id))!;
   },
 
   async update(userId: string, id: string, data: UpdatePendingInput): Promise<PendingTransaction | null> {
@@ -96,13 +107,12 @@ export const pendingRepository = {
     fields.push("updated_at = now()");
     params.push(id, userId);
 
-    const result = await query<PendingTransaction>(
+    await query(
       `UPDATE pending_transactions SET ${fields.join(", ")}
-       WHERE id = $${params.length - 1} AND user_id = $${params.length}
-       RETURNING *, (${EFFECTIVE_STATUS_EXPR}) as effective_status`,
+       WHERE id = $${params.length - 1} AND user_id = $${params.length}`,
       params
     );
-    return result.rows[0] ?? null;
+    return this.findById(userId, id);
   },
 
   async remove(userId: string, id: string): Promise<boolean> {
@@ -139,12 +149,12 @@ export const pendingRepository = {
     input: { newStatus: "pago" | "recebido"; category: string; paymentMethod: string }
   ): Promise<{ pending: PendingTransaction; transactionId: string }> {
     const client = await pool.connect();
+    let transactionId: string;
     try {
       await client.query("BEGIN");
 
-      const pendingResult = await client.query<PendingTransaction>(
-        `SELECT *, (${EFFECTIVE_STATUS_EXPR}) as effective_status
-         FROM pending_transactions WHERE id = $1 AND user_id = $2 FOR UPDATE`,
+      const pendingResult = await client.query<{ status: string; type: PendingType; description: string; amount: string }>(
+        `SELECT status, type, description, amount FROM pending_transactions WHERE id = $1 AND user_id = $2 FOR UPDATE`,
         [id, userId]
       );
       const pending = pendingResult.rows[0];
@@ -156,27 +166,28 @@ export const pendingRepository = {
       }
 
       const txType = pending.type === "receber" ? "entrada" : "saida";
-      const txResult = await client.query(
+      const txResult = await client.query<{ id: string }>(
         `INSERT INTO transactions (user_id, type, description, amount, category, payment_method, date, pending_transaction_id)
          VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE, $7)
          RETURNING id`,
         [userId, txType, pending.description, pending.amount, input.category, input.paymentMethod, id]
       );
+      transactionId = txResult.rows[0].id;
 
-      const updateResult = await client.query<PendingTransaction>(
-        `UPDATE pending_transactions SET status = $1, updated_at = now()
-         WHERE id = $2 AND user_id = $3
-         RETURNING *, (${EFFECTIVE_STATUS_EXPR}) as effective_status`,
+      await client.query(
+        `UPDATE pending_transactions SET status = $1, updated_at = now() WHERE id = $2 AND user_id = $3`,
         [input.newStatus, id, userId]
       );
 
       await client.query("COMMIT");
-      return { pending: updateResult.rows[0], transactionId: txResult.rows[0].id };
     } catch (err) {
       await client.query("ROLLBACK");
       throw err;
     } finally {
       client.release();
     }
+
+    const updated = (await this.findById(userId, id))!;
+    return { pending: updated, transactionId };
   },
 };

@@ -1,51 +1,70 @@
 .action-sheet-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(48, 50, 52, 0.45);
+  z-index: 50;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 50;
+  background: rgba(38, 36, 31, 0.5);
+  animation: overlay-fade 0.18s ease;
 }
 
 .action-sheet {
+  position: relative;
   width: 100%;
   max-width: var(--content-max-width);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  padding: var(--space-6) var(--space-5) calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  box-shadow: var(--shadow-sheet);
+  animation: sheet-rise 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Puxador: diz que a folha desce. */
+.action-sheet::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--rule-strong);
 }
 
 .action-sheet__title {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+  color: var(--ink-soft);
+  margin-bottom: var(--space-1);
 }
 
 .action-sheet__item {
-  min-height: var(--tap-target);
+  min-height: 54px;
+  padding: 0 var(--space-4);
+  text-align: left;
+  border: 1.5px solid var(--rule-strong);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-display);
+  background: var(--paper);
+  color: var(--ink);
   font-weight: 600;
   font-size: var(--text-base);
-  text-align: left;
-  padding: 0 var(--space-4);
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .action-sheet__item--entrada {
-  border-color: var(--color-success);
-  color: var(--color-success);
+  border-color: var(--green);
+  color: var(--green-deep);
 }
 
-.action-sheet__item--saida {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
+.action-sheet__item--entrada:hover {
+  background: var(--green-wash);
 }

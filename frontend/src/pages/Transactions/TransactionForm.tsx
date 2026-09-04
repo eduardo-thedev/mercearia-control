@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Input } from "../../components/Input/Input";
 import { Button } from "../../components/Button/Button";
@@ -13,12 +13,14 @@ import "./TransactionForm.css";
 export function TransactionForm() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
 
-  const [type, setType] = useState<TransactionType>(
-    (searchParams.get("type") as TransactionType) === "saida" ? "saida" : "entrada"
-  );
+  // O dono nao registra saida pelo app (secao "so controle interno" do
+  // pedido) - todo lancamento novo e uma venda. "saida" so aparece aqui
+  // se for edicao de um lancamento que o sistema mesmo criou ao baixar
+  // uma pendencia a pagar; nesse caso o tipo vem travado do useEffect
+  // abaixo e o formulario nunca oferece o toggle pra trocar.
+  const [type, setType] = useState<TransactionType>("entrada");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
@@ -48,11 +50,6 @@ export function TransactionForm() {
       .catch((err) => setError(err instanceof ApiError ? err.message : "Nao foi possivel carregar o lancamento."))
       .finally(() => setLoadingInitial(false));
   }, [id]);
-
-  function handleTypeChange(next: TransactionType) {
-    setType(next);
-    setCategory(""); // lista de categorias muda por tipo
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -99,7 +96,9 @@ export function TransactionForm() {
       <button className="tx-form-page__back" onClick={() => navigate(-1)}>
         ← Voltar
       </button>
-      <h1 className="tx-form-page__title">{isEdit ? "Editar lançamento" : "Novo lançamento"}</h1>
+      <h1 className="tx-form-page__title">
+        {isEdit ? (type === "saida" ? "Editar saída" : "Editar venda") : "Nova venda"}
+      </h1>
 
       {locked ? (
         <Card>
@@ -115,23 +114,6 @@ export function TransactionForm() {
         <Card>
           <form className="tx-form" onSubmit={handleSubmit}>
             {error && <div className="tx-form__error">{error}</div>}
-
-            <div className="tx-form__type-toggle">
-              <button
-                type="button"
-                className={`tx-form__type-btn ${type === "entrada" ? "tx-form__type-btn--active-entrada" : ""}`}
-                onClick={() => handleTypeChange("entrada")}
-              >
-                Entrada
-              </button>
-              <button
-                type="button"
-                className={`tx-form__type-btn ${type === "saida" ? "tx-form__type-btn--active-saida" : ""}`}
-                onClick={() => handleTypeChange("saida")}
-              >
-                Saída
-              </button>
-            </div>
 
             <Input
               label="Descrição"

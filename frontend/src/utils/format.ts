@@ -28,3 +28,25 @@ export function firstDayOfMonthIso(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}-01`;
 }
+
+export function currentMonthIso(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+const MONTH_NAMES_PT = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+// "2026-08" -> "Agosto/2026"
+export function formatMonthLabel(monthIso: string): string {
+  const [year, month] = monthIso.split("-");
+  return `${MONTH_NAMES_PT[Number(month) - 1]}/${year}`;
+}
+
+// "2026-08" -> "Ago" (pros rotulos do grafico de evolucao, que precisam ser curtos)
+export function formatMonthShort(monthIso: string): string {
+  const [, month] = monthIso.split("-");
+  return MONTH_NAMES_PT[Number(month) - 1].slice(0, 3);
+}

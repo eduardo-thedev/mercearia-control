@@ -7,17 +7,21 @@
 
 .transactions__title {
   font-size: var(--text-2xl);
-  color: var(--color-primary-dark);
-  margin-bottom: var(--space-4);
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
 }
 
+/* --- Abas entrada/saida -------------------------------------------
+   A cor da aba ativa e a cor do dinheiro que ela mostra: verde entra,
+   vermelho sai. Mesma regra nos filtros de categoria e no formulario. */
 .tabs {
   display: flex;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 4px;
   gap: 4px;
+  padding: 4px;
+  background: var(--paper-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
 }
 
 .tabs__item {
@@ -26,23 +30,27 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: var(--ink-soft);
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .tabs__item--active-entrada {
-  background: var(--color-success);
-  color: #fff;
+  background: var(--green);
+  color: var(--paper-raised);
 }
 
-.tabs__item--active-saida {
-  background: var(--color-danger);
-  color: #fff;
+/* Caminho secundario (ex: "A Pagar" em Pendencias) - marcado, mas sem o
+   preenchimento cheio que o fluxo principal usa. */
+.tabs__item--active-secondary {
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
 }
 
+/* --- Filtros ------------------------------------------------------ */
 .filters {
   display: flex;
   gap: var(--space-3);
@@ -58,39 +66,60 @@
 }
 
 .filters__label {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
 }
 
 .filters__input,
 .filters__select {
-  min-height: 40px;
+  min-height: 42px;
   padding: 0 var(--space-3);
+  border: 1.5px solid var(--rule-strong);
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--paper-raised);
   font-size: var(--text-sm);
-  color: var(--color-text);
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.filters__input:focus,
+.filters__select:focus {
+  border-color: var(--ink);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(38, 36, 31, 0.12);
+}
+
+.filters__select {
+  appearance: none;
+  padding-right: var(--space-6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2326241F' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+}
+
+/* --- Lista -------------------------------------------------------- */
 .tx-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .tx-empty {
+  padding: var(--space-7) 0;
   text-align: center;
-  color: var(--color-text-muted);
   font-size: var(--text-sm);
-  padding: var(--space-6) 0;
+  color: var(--ink-soft);
 }
 
-.tx-card {
+.card.tx-card {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-3);
+  padding: var(--space-4);
 }
 
 .tx-card__main {
@@ -101,17 +130,32 @@
 }
 
 .tx-card__description {
-  font-weight: 600;
-  color: var(--color-text);
   font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .tx-card__meta {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--ink-soft);
+}
+
+.tx-card__pending-tag {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px var(--space-2);
+  background: var(--amber-wash);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber-ink);
 }
 
 .tx-card__side {
@@ -122,18 +166,17 @@
 }
 
 .tx-card__amount {
-  font-family: var(--font-display);
-  font-weight: 700;
   font-size: var(--text-base);
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .tx-card__amount--entrada {
-  color: var(--color-success);
+  color: var(--green);
 }
 
 .tx-card__amount--saida {
-  color: var(--color-danger);
+  color: var(--red);
 }
 
 .tx-card__actions {
@@ -142,20 +185,22 @@
 }
 
 .tx-card__action {
-  background: none;
+  padding: var(--space-1) 0;
   border: none;
-  padding: 0;
+  background: none;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--ink-soft);
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.tx-card__action--danger {
-  color: var(--color-danger);
+.tx-card__action:hover {
+  color: var(--ink);
 }
 
-.tx-card__pending-tag {
-  font-size: var(--text-xs);
-  color: var(--color-accent-dark);
+.tx-card__action--danger,
+.tx-card__action--danger:hover {
+  color: var(--red);
 }

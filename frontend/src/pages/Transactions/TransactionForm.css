@@ -6,18 +6,28 @@
 }
 
 .tx-form-page__back {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  cursor: pointer;
   align-self: flex-start;
+  padding: var(--space-2) 0;
+  border: none;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.tx-form-page__back:hover {
+  color: var(--ink);
 }
 
 .tx-form-page__title {
+  font-family: var(--font-display);
   font-size: var(--text-2xl);
-  color: var(--color-primary-dark);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 .tx-form {
@@ -26,6 +36,8 @@
   gap: var(--space-4);
 }
 
+/* Escolher entrada ou saida e a primeira decisao do formulario, entao
+   os dois botoes sao grandes e carregam a cor do dinheiro. */
 .tx-form__type-toggle {
   display: flex;
   gap: var(--space-3);
@@ -33,38 +45,48 @@
 
 .tx-form__type-btn {
   flex: 1;
-  min-height: var(--tap-target);
+  min-height: 54px;
+  border: 1.5px solid var(--rule-strong);
   border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-family: var(--font-display);
+  background: var(--paper-raised);
+  color: var(--ink-soft);
   font-weight: 600;
+  font-size: var(--text-base);
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .tx-form__type-btn--active-entrada {
-  border-color: var(--color-success);
-  background: var(--color-success);
-  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--paper-raised);
 }
 
-.tx-form__type-btn--active-saida {
-  border-color: var(--color-danger);
-  background: var(--color-danger);
-  color: #fff;
+/* Caminho secundario: "a pagar" quase nunca se aplica pra esse dono
+   (sem fornecedor fiado), entao quando escolhido nao ganha o mesmo
+   preenchimento cheio da acao principal - so um contorno marcado. */
+.tx-form__type-btn--active-secondary {
+  border-color: var(--ink);
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .tx-form__error {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
-  border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
+  background: var(--red-wash);
+  border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius-paper) var(--radius-paper) 0;
+  color: var(--red-deep);
   font-size: var(--text-sm);
+  line-height: 1.5;
 }
 
 .tx-form__locked-note {
-  color: var(--color-text-muted);
+  padding: var(--space-3) var(--space-4);
+  background: var(--amber-wash);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-paper) var(--radius-paper) 0;
+  color: var(--ink-soft);
   font-size: var(--text-sm);
   line-height: 1.5;
 }

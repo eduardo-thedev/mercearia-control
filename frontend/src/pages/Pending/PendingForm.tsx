@@ -5,9 +5,11 @@ import { Input } from "../../components/Input/Input";
 import { Button } from "../../components/Button/Button";
 import "../../components/Input/Input.css";
 import { api, ApiError } from "../../services/api";
-import { PendingType } from "../../types";
+import { PendingType, Person } from "../../types";
 import { todayIso } from "../../utils/format";
 import "../Transactions/TransactionForm.css"; // reaproveita .tx-form-page / .tx-form / .tx-form__error
+
+const NEW_PERSON_VALUE = "__new__";
 
 export function PendingForm() {
   const navigate = useNavigate();
@@ -18,7 +20,13 @@ export function PendingForm() {
   const [type, setType] = useState<PendingType>(
     (searchParams.get("type") as PendingType) === "pagar" ? "pagar" : "receber"
   );
-  const [person, setPerson] = useState("");
+  const [people, setPeople] = useState<Person[]>([]);
+  const [personId, setPersonId] = useState(searchParams.get("person_id") ?? "");
+  const [showNewPerson, setShowNewPerson] = useState(false);
+  const [newPersonName, setNewPersonName] = useState("");
+  const [newPersonPhone, setNewPersonPhone] = useState("");
+  const [creatingPerson, setCreatingPerson] = useState(false);
+
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState(todayIso());
@@ -29,13 +37,24 @@ export function PendingForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Lista de gente ja cadastrada pra escolher em vez de digitar o nome de
+  // novo toda vez - e o motivo de "Joao" duas vezes nao virar duas pessoas.
+  useEffect(() => {
+    api.people
+      .list()
+      .then(({ people }) => setPeople(people))
+      .catch(() => {
+        /* selecao so fica vazia - o erro real aparece se tentar salvar sem pessoa */
+      });
+  }, []);
+
   useEffect(() => {
     if (!id) return;
     api.pending
       .get(id)
       .then(({ pending }) => {
         setType(pending.type);
-        setPerson(pending.person);
+        setPersonId(pending.person_id);
         setDescription(pending.description);
         setAmount(String(pending.amount));
         setDueDate(pending.due_date);
@@ -46,12 +65,46 @@ export function PendingForm() {
       .finally(() => setLoadingInitial(false));
   }, [id]);
 
+  function handlePersonSelect(value: string) {
+    if (value === NEW_PERSON_VALUE) {
+      setShowNewPerson(true);
+      setPersonId("");
+      return;
+    }
+    setShowNewPerson(false);
+    setPersonId(value);
+  }
+
+  async function handleCreatePerson() {
+    setError(null);
+    if (!newPersonName.trim()) {
+      setError("Informe o nome da pessoa.");
+      return;
+    }
+    setCreatingPerson(true);
+    try {
+      const { person } = await api.people.create({
+        name: newPersonName.trim(),
+        phone: newPersonPhone.trim() || null,
+      });
+      setPeople((prev) => [...prev, person].sort((a, b) => a.name.localeCompare(b.name)));
+      setPersonId(person.id);
+      setShowNewPerson(false);
+      setNewPersonName("");
+      setNewPersonPhone("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Nao foi possivel cadastrar a pessoa.");
+    } finally {
+      setCreatingPerson(false);
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
 
     const parsedAmount = Number(amount.replace(",", "."));
-    if (!person.trim()) return setError("Informe o cliente/fornecedor.");
+    if (!personId) return setError(`Selecione o ${type === "receber" ? "cliente" : "fornecedor"}.`);
     if (!description.trim()) return setError("Descricao e obrigatoria.");
     if (!parsedAmount || parsedAmount <= 0) return setError("O valor deve ser maior que zero.");
     if (!dueDate) return setError("Vencimento e obrigatorio.");
@@ -60,7 +113,7 @@ export function PendingForm() {
     try {
       const payload = {
         type,
-        person: person.trim(),
+        person_id: personId,
         description: description.trim(),
         amount: parsedAmount,
         due_date: dueDate,
@@ -116,20 +169,52 @@ export function PendingForm() {
               </button>
               <button
                 type="button"
-                className={`tx-form__type-btn ${type === "pagar" ? "tx-form__type-btn--active-saida" : ""}`}
+                className={`tx-form__type-btn ${type === "pagar" ? "tx-form__type-btn--active-secondary" : ""}`}
                 onClick={() => setType("pagar")}
               >
                 A Pagar
               </button>
             </div>
 
-            <Input
-              label={type === "receber" ? "Cliente" : "Fornecedor"}
-              value={person}
-              onChange={(e) => setPerson(e.target.value)}
-              maxLength={160}
-              required
-            />
+            <label className="field">
+              <span className="field__label">{type === "receber" ? "Cliente" : "Fornecedor"}</span>
+              <select
+                className="field__input"
+                value={showNewPerson ? NEW_PERSON_VALUE : personId}
+                onChange={(e) => handlePersonSelect(e.target.value)}
+                required={!showNewPerson}
+              >
+                <option value="">Selecione</option>
+                {people.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+                <option value={NEW_PERSON_VALUE}>+ Cadastrar novo</option>
+              </select>
+            </label>
+
+            {showNewPerson && (
+              <Card style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+                <Input
+                  label="Nome"
+                  value={newPersonName}
+                  onChange={(e) => setNewPersonName(e.target.value)}
+                  maxLength={160}
+                  autoFocus
+                />
+                <Input
+                  label="Telefone (opcional)"
+                  type="tel"
+                  value={newPersonPhone}
+                  onChange={(e) => setNewPersonPhone(e.target.value)}
+                  maxLength={30}
+                />
+                <Button type="button" variant="ghost" onClick={handleCreatePerson} loading={creatingPerson}>
+                  Salvar pessoa
+                </Button>
+              </Card>
+            )}
 
             <Input
               label="Descrição"

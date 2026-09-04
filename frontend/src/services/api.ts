@@ -8,9 +8,16 @@ import {
   PendingInput,
   PendingFilters,
   PendingSummary,
+  MonthlyReport,
+  CategoryBreakdownItem,
+  EvolutionPoint,
+  TransactionType,
+  Person,
+  PersonInput,
+  PersonWithTotals,
 } from "../types";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 class ApiError extends Error {
   constructor(message: string, public status: number) {
@@ -63,6 +70,18 @@ export const api = {
 
   me: () => request<{ user: User }>("/auth/me"),
 
+  forgotPassword: (email: string) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    }),
+
   transactions: {
     list: (filters: TransactionFilters = {}) =>
       request<{ transactions: Transaction[] }>(`/transactions${toQueryString(filters)}`),
@@ -114,6 +133,36 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ payment_method: paymentMethod }),
       }),
+  },
+
+  people: {
+    list: (q?: string) => request<{ people: PersonWithTotals[] }>(`/people${toQueryString({ q })}`),
+
+    get: (id: string) => request<{ person: Person }>(`/people/${id}`),
+
+    create: (input: PersonInput) =>
+      request<{ person: Person }>("/people", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+
+    update: (id: string, input: Partial<PersonInput>) =>
+      request<{ person: Person }>(`/people/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(input),
+      }),
+
+    remove: (id: string) => request<void>(`/people/${id}`, { method: "DELETE" }),
+  },
+
+  reports: {
+    monthly: (month: string) => request<MonthlyReport>(`/reports/monthly${toQueryString({ month })}`),
+
+    categories: (month: string, type: TransactionType) =>
+      request<{ categories: CategoryBreakdownItem[] }>(`/reports/categories${toQueryString({ month, type })}`),
+
+    evolution: (months = 6) =>
+      request<{ evolution: EvolutionPoint[] }>(`/reports/evolution${toQueryString({ months })}`),
   },
 };
 

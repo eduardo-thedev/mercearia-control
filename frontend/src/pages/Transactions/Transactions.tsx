@@ -44,11 +44,6 @@ export function Transactions() {
     load();
   }, [type, category, from, to]);
 
-  function handleTypeChange(next: TransactionType) {
-    setType(next);
-    setCategory(""); // categorias sao diferentes por tipo, entao reseta o filtro
-  }
-
   async function confirmDelete() {
     if (!pendingDeleteId) return;
     setDeleting(true);
@@ -69,22 +64,29 @@ export function Transactions() {
     <div className="transactions">
       <h1 className="transactions__title">Lançamentos</h1>
 
-      <div className="tabs">
-        <button
-          className={`tabs__item ${type === "entrada" ? "tabs__item--active-entrada" : ""}`}
-          onClick={() => handleTypeChange("entrada")}
-        >
-          Entradas
-        </button>
-        <button
-          className={`tabs__item ${type === "saida" ? "tabs__item--active-saida" : ""}`}
-          onClick={() => handleTypeChange("saida")}
-        >
-          Saídas
-        </button>
-      </div>
-
+      {/*
+        Sem abas grandes de Entrada/Saida: o dono so registra venda pelo
+        app, entao "Entradas" e o estado normal da tela. "Saidas" fica
+        disponivel como mais um filtro discreto, do lado de Categoria e
+        datas - existe pro dia raro em que uma pendencia a pagar foi
+        baixada e gerou uma saida no historico, sem competir visualmente
+        com o fluxo do dia a dia.
+      */}
       <div className="filters">
+        <label className="filters__field">
+          <span className="filters__label">Tipo</span>
+          <select
+            className="filters__select"
+            value={type}
+            onChange={(e) => {
+              setType(e.target.value as TransactionType);
+              setCategory(""); // categorias sao diferentes por tipo, entao reseta o filtro
+            }}
+          >
+            <option value="entrada">Entradas</option>
+            <option value="saida">Saídas</option>
+          </select>
+        </label>
         <label className="filters__field">
           <span className="filters__label">Categoria</span>
           <select className="filters__select" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -153,8 +155,9 @@ export function Transactions() {
           ))}
       </div>
 
-      <Button variant="ghost" onClick={() => navigate(`/transactions/new?type=${type}`)}>
-        + Novo {type === "entrada" ? "Entrada" : "Saída"}
+      {/* Sempre cria venda - saida so existe via baixa de pendencia a pagar. */}
+      <Button variant="ghost" onClick={() => navigate("/transactions/new")}>
+        + Nova Venda
       </Button>
 
       <ConfirmDialog

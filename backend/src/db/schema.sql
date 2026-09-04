@@ -25,6 +25,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username
   ON users(username)
   WHERE username IS NOT NULL;
 
+-- Recuperacao de senha: guarda so o HASH do token (nunca o token cru),
+-- mesmo principio de nunca guardar senha em texto puro. Token expira e
+-- e de uso unico (limpo apos reset bem-sucedido).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_hash TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS pending_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -65,3 +71,43 @@ CREATE INDEX IF NOT EXISTS idx_pending_user_status ON pending_transactions(user_
 CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_pending_unique
   ON transactions(pending_transaction_id)
   WHERE pending_transaction_id IS NOT NULL;
+
+-- Pessoas (clientes/fornecedores) do outro lado de uma pendencia.
+-- pending_transactions.person comecou como texto livre: "Joao" digitado
+-- duas vezes virava duas pessoas diferentes pro sistema, sem jeito de
+-- somar quanto uma pessoa especifica deve no total. Uma tabela real,
+-- compartilhada entre receber (cliente) e pagar (fornecedor) - o papel
+-- muda, "pessoa do outro lado" nao.
+CREATE TABLE IF NOT EXISTS people (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(160) NOT NULL,
+  phone VARCHAR(30),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_people_user_name ON people(user_id, name);
+
+-- Migra pending_transactions.person (texto) para people.id. Idempotente:
+-- so cria/associa o que ainda nao tem person_id, entao rodar de novo em
+-- cima de um banco ja migrado nao faz nada.
+ALTER TABLE pending_transactions ADD COLUMN IF NOT EXISTS person_id UUID REFERENCES people(id);
+
+INSERT INTO people (user_id, name)
+SELECT DISTINCT pt.user_id, pt.person
+FROM pending_transactions pt
+WHERE pt.person_id IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM people p WHERE p.user_id = pt.user_id AND p.name = pt.person
+  );
+
+UPDATE pending_transactions pt
+SET person_id = p.id
+FROM people p
+WHERE pt.person_id IS NULL AND pt.user_id = p.user_id AND pt.person = p.name;
+
+ALTER TABLE pending_transactions ALTER COLUMN person_id SET NOT NULL;
+ALTER TABLE pending_transactions DROP COLUMN IF EXISTS person;
+
+CREATE INDEX IF NOT EXISTS idx_pending_person ON pending_transactions(person_id);
