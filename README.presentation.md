@@ -1,4 +1,4 @@
-# 🛒 Mercearia Lima
+# 🛒 Mercearia Control
 
 ### Sistema de Controle Financeiro para Pequenos Negócios
 
@@ -10,7 +10,7 @@ O projeto foi desenvolvido com foco em uma arquitetura organizada, segurança, c
 
 ## 📌 Sobre o Projeto
 
-O **Mercearia Lima** é um sistema de controle financeiro desenvolvido para substituir processos manuais baseados em anotações e planilhas.
+O **Mercearia Control** é um sistema de controle financeiro desenvolvido para substituir processos manuais baseados em anotações e planilhas.
 
 A aplicação permite registrar movimentações financeiras, acompanhar valores a receber e pagar, realizar baixas de pendências e visualizar indicadores através de um dashboard.
 
@@ -32,7 +32,7 @@ O projeto segue atualmente um modelo **single-user**, onde cada usuário possui 
 
 ---
 
-### 💰 Controle Financeiro
+### 💰 e Financeiro
 
 - Cadastro de entradas
 - Cadastro de saídas
