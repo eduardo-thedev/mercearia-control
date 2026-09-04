@@ -187,6 +187,10 @@ frontend/src/
                   ErrorBoundary
   pages/         Login, ForgotPassword, ResetPassword, Dashboard, Transactions
                   (lista + form), Pending (lista + form), Reports
+  utils/         formatCurrency, formatDateDisplay, todayIso, firstDayOfMonthIso
+  components/    Button, Input, Card, Layout, ConfirmDialog, ActionSheet, SettleDialog
+  pages/         Login, Dashboard (indicadores reais), Transactions (lista + form),
+                  Pending (lista + form)
   contexts/      AuthContext
   services/      api.ts (fetch client)
   routes/        ProtectedRoute
@@ -216,3 +220,8 @@ frontend/src/
 - `RESEND_API_KEY` ainda nao configurada em lugar nenhum - o fluxo de reset
   de senha funciona ponta a ponta, mas o e-mail de verdade so sai quando essa
   chave for configurada (fallback pro console enquanto isso).
+- Fase 5 (Relatorios) e a proxima: relatorio mensal, filtros, graficos
+  basicos - vai reaproveitar `/transactions/summary` com `from`/`to` por
+  periodo, ja pronto desde a Fase 2.
+- Fase 6 (Refinamento) fica pra quando o escopo for fechado explicitamente -
+  "polish" nao tem linha de chegada obvia.
